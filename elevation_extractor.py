@@ -3,6 +3,9 @@ import warnings
 import tempfile
 from owslib.wcs import WebCoverageService
 import rasterio
+import os
+import glob
+from rasterio.warp import transform
 
 class ElevationExtractor:
     def __init__(self):
@@ -51,3 +54,58 @@ class ElevationExtractor:
             except rasterio.errors.RasterioIOError:
                 print("Not a valid GeoTIFF — check request parameters or server response.")
                 return None
+
+    def get_elevation_from_file(self, lat, lon, file_path):
+        try:
+            with rasterio.open(file_path) as dataset:
+                # Transform coordinates to the dataset CRS if needed
+                if dataset.crs.to_string() != "EPSG:4326":
+                    lon, lat = transform(
+                        "EPSG:4326", dataset.crs, [lon], [lat]
+                    )
+                    lon, lat = lon[0], lat[0]
+
+                value = list(dataset.sample([(lon, lat)]))[0][0]
+                nodata = dataset.nodata
+
+                if value == nodata or value < -1000:
+                    print(f"Value at ({lat}, {lon}) is a no-data value: {value}")
+                    return None
+                return value
+        except Exception as e:
+            print(f"Error reading from file {file_path}: {e}")
+            return None
+
+    def get_elevation_from_files(self, lat, lon):
+        tif_files = glob.glob(os.path.join("elevation/", "*.tif"))
+
+        for file_path in tif_files:
+            try:
+                with rasterio.open(file_path) as dataset:
+                    bounds = dataset.bounds
+
+                    # Transform the coordinate to the dataset's CRS if needed
+                    if dataset.crs.to_string() != "EPSG:4326":
+                        lon_t, lat_t = transform("EPSG:4326", dataset.crs, [lon], [lat])
+                        lon_t, lat_t = lon_t[0], lat_t[0]
+                    else:
+                        lon_t, lat_t = lon, lat
+
+                    # Check if the point is within this raster's bounds
+                    if bounds.left <= lon_t <= bounds.right and bounds.bottom <= lat_t <= bounds.top:
+                        value = list(dataset.sample([(lon_t, lat_t)]))[0][0]
+                        nodata = dataset.nodata
+
+                        if value == nodata or value < -1000:
+                            print(f"Found in {file_path}, but it's a no-data value: {value}")
+                            continue  # Try the next file
+
+                        print(f"Value from {file_path}")
+                        return value
+            except Exception as e:
+                print(f"Error reading {file_path}: {e}")
+                continue
+
+        print("No valid elevation found in available TIFF files.")
+        return None
+
