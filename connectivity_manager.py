@@ -99,6 +99,18 @@ class ConnectivityManager:
                         }
                         self.towers.append(tower)
 
+                        # Band 1 | 2100 MHz
+                        # Band 3 | 1800 MHz
+                        # Band 7 | 2600 MHz
+                        # Band 8 | 900 MHz
+                        # Band 20 | 800 MHz
+                        # Band 28 | 700 MHz
+                        # Band 32 | 1500 MHz
+                        # Band 38 | 2600 MHz
+                        # Band 78 | 3700 MHz
+                        # Band 257 | 28 GHz
+                        # Band 258 | 26 GHz
+
                         folium.CircleMarker(
                             location=(lat, lon),
                             radius=4,
