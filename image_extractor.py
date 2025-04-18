@@ -12,7 +12,7 @@ class ImageExtractor:
         self.project_to_utm = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:32633", always_xy=True).transform
         self.project_to_wgs84 = pyproj.Transformer.from_crs("EPSG:32633", "EPSG:4326", always_xy=True).transform
 
-    def get_image(self, lat, lon, bbox_size_m=100, resolution_m_per_pixel=0.2, save_path="satellite_image.png"):
+    def get_image(self, lat, lon, bbox_size_m=100, resolution_m_per_pixel=0.2):
         delta = bbox_size_m / 2
 
         # Convert lat/lon to UTM
