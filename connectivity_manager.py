@@ -82,6 +82,10 @@ class ConnectivityManager:
                         cell_id = int(parts[1])
                         lat = float(parts[4])
                         lon = float(parts[5])
+                        raw_type = parts[7]
+                        band = raw_type.split(' ')[0]
+                        # check if raw_type contains '5G'
+                        five_g = '5G' in raw_type
                     except ValueError:
                         continue
 
@@ -89,7 +93,9 @@ class ConnectivityManager:
                         tower = {
                             "lat": lat,
                             "lon": lon,
-                            "cell_id": cell_id
+                            "cell_id": cell_id,
+                            "band": band,
+                            "five_g": five_g
                         }
                         self.towers.append(tower)
 
@@ -99,7 +105,7 @@ class ConnectivityManager:
                             color='red',
                             fill=True,
                             fill_opacity=0.8,
-                            popup=f"Cell ID: {cell_id}"
+                            popup=f"Cell ID: {cell_id} {band} {'5G' if five_g else ''}"
                         ).add_to(map_obj)
 
     def generate_map(self, save_path):

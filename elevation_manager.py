@@ -7,7 +7,7 @@ import os
 import glob
 from rasterio.warp import transform
 
-class ElevationExtractor:
+class ElevationManager:
     def __init__(self):
         self.service_url = "https://tinitaly.pi.ingv.it/TINItaly_1_1/wcs"
         self.coverage_id = "TINItaly_1_1:tinitaly_dem"
@@ -26,7 +26,7 @@ class ElevationExtractor:
             return old_request(*args, **kwargs)
         requests.request = unsafe_request
 
-    def get_elevation(self, lat, lon, delta_lat=0.00009, delta_lon=0.00013):
+    def get_elevation_wcs(self, lat, lon, delta_lat=0.00009, delta_lon=0.00013):
         bbox = (lon - delta_lon, lat - delta_lat, lon + delta_lon, lat + delta_lat)
 
         try:
@@ -76,7 +76,7 @@ class ElevationExtractor:
             print(f"Error reading from file {file_path}: {e}")
             return None
 
-    def get_elevation_from_files(self, lat, lon):
+    def get_elevation_tiff(self, lat, lon):
         tif_files = glob.glob(os.path.join("elevation/", "*.tif"))
 
         for file_path in tif_files:
@@ -100,7 +100,7 @@ class ElevationExtractor:
                             print(f"Found in {file_path}, but it's a no-data value: {value}")
                             continue  # Try the next file
 
-                        print(f"Value from {file_path}")
+                        # print(f"Value from {file_path}")
                         return value
             except Exception as e:
                 print(f"Error reading {file_path}: {e}")

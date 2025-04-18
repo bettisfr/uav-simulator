@@ -3,7 +3,7 @@ import pyproj
 from io import BytesIO
 from PIL import Image
 
-class ImageExtractor:
+class ImageManager:
     def __init__(self):
         self.wms_url = "https://siat.regione.umbria.it/arcgis/services/public/ORTOFOTO_2020_WGS84_UTM33N/MapServer/WMSServer"
         self.layer = "0"
