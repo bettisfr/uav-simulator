@@ -6,6 +6,20 @@ from scipy.spatial import ConvexHull
 import numpy as np
 import matplotlib.pyplot as plt
 
+band_frequencies_numeric = {
+    1: 2100,      # MHz
+    3: 1800,      # MHz
+    7: 2600,      # MHz
+    8: 900,       # MHz
+    20: 800,      # MHz
+    28: 700,      # MHz
+    32: 1500,     # MHz
+    38: 2600,     # MHz
+    78: 3700,     # MHz
+    257: 28000,   # GHz converted to MHz (28 * 1000)
+    258: 26000    # GHz converted to MHz (26 * 1000)
+}
+
 class ConnectivityManager:
     def __init__(self, dataset_dirs=None, tower_files=None):
         self.dataset_dirs = dataset_dirs or [
@@ -28,7 +42,6 @@ class ConnectivityManager:
             for file_path in glob.glob(f'{folder}/*.csv'):
                 file_name = os.path.basename(file_path)
 
-                # Skip OCID files in main dataset only
                 if 'ocid' in file_name and 'dataset' in folder:
                     continue
 
@@ -83,33 +96,47 @@ class ConnectivityManager:
                         lat = float(parts[4])
                         lon = float(parts[5])
                         raw_type = parts[7]
-                        band = raw_type.split(' ')[0]
-                        # check if raw_type contains '5G'
+                        band_str = raw_type.split(' ')[0]
+                        if band_str[0] != "B":
+                            band_str = "B1"
+                        band = band_frequencies_numeric[int(band_str[1:])]
                         five_g = '5G' in raw_type
                     except ValueError:
                         continue
 
                     if cell_id in self.observed_cell_ids:
+                        matching_obs = [obs for obs in self.observations if obs["cell_id"] == cell_id]
+                        coverage = []
+
+                        if len(matching_obs) >= 3:
+                            points = [(obs["lat"], obs["lon"]) for obs in matching_obs]
+                            points.append((lat, lon))  # include the tower location
+
+                            np_points = np.array(points)
+                            try:
+                                hull = ConvexHull(np_points)
+                                coverage = [tuple(np_points[i]) for i in hull.vertices]
+
+                                # # Draw convex hull on map
+                                # folium.Polygon(
+                                #     locations=coverage,
+                                #     color='black',
+                                #     weight=1,
+                                #     fill=True,
+                                #     fill_opacity=0.1
+                                # ).add_to(map_obj)
+                            except Exception as e:
+                                print(f"[WARN] Failed to compute convex hull for cell_id {cell_id}: {e}")
+
                         tower = {
                             "lat": lat,
                             "lon": lon,
                             "cell_id": cell_id,
                             "band": band,
-                            "five_g": five_g
+                            "five_g": five_g,
+                            "coverage": coverage
                         }
                         self.towers.append(tower)
-
-                        # Band 1 | 2100 MHz
-                        # Band 3 | 1800 MHz
-                        # Band 7 | 2600 MHz
-                        # Band 8 | 900 MHz
-                        # Band 20 | 800 MHz
-                        # Band 28 | 700 MHz
-                        # Band 32 | 1500 MHz
-                        # Band 38 | 2600 MHz
-                        # Band 78 | 3700 MHz
-                        # Band 257 | 28 GHz
-                        # Band 258 | 26 GHz
 
                         folium.CircleMarker(
                             location=(lat, lon),
@@ -117,7 +144,7 @@ class ConnectivityManager:
                             color='red',
                             fill=True,
                             fill_opacity=0.8,
-                            popup=f"Cell ID: {cell_id} {band} {'5G' if five_g else ''}"
+                            popup=f"Cell ID: {cell_id} {band_str} {'5G' if five_g else ''}"
                         ).add_to(map_obj)
 
     def generate_map(self, save_path):
@@ -131,6 +158,6 @@ class ConnectivityManager:
         print(f"Total observations: {len(self.observations)}")
         print(f"Total towers: {len(self.towers)}")
         if self.observations:
-            print(f"Sample observation: {self.observations[0]}")
+            print(f"Sample observation: {self.observations[110]}")
         if self.towers:
-            print(f"Sample tower: {self.towers[0]}")
+            print(f"Sample tower: {self.towers[110]}")
