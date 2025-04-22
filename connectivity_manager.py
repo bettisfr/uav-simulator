@@ -4,7 +4,6 @@ import folium
 import os
 from scipy.spatial import ConvexHull
 import numpy as np
-import matplotlib.pyplot as plt
 
 band_frequencies_numeric = {
     1: 2100,      # MHz
@@ -154,9 +153,10 @@ class ConnectivityManager:
         self._parse_towers(m)
 
         # random print
-        azz = 104
+        azz = 875
         print(f"Sample observation: {self.observations[azz]}")
         print(f"Sample tower: {self.towers[azz]}")
+
         # Draw convex hull on map
         folium.Polygon(
             locations=self.towers[azz]["coverage"],

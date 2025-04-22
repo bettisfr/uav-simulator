@@ -55,27 +55,6 @@ class ElevationManager:
                 print("Not a valid GeoTIFF — check request parameters or server response.")
                 return None
 
-    def get_elevation_from_file(self, lat, lon, file_path):
-        try:
-            with rasterio.open(file_path) as dataset:
-                # Transform coordinates to the dataset CRS if needed
-                if dataset.crs.to_string() != "EPSG:4326":
-                    lon, lat = transform(
-                        "EPSG:4326", dataset.crs, [lon], [lat]
-                    )
-                    lon, lat = lon[0], lat[0]
-
-                value = list(dataset.sample([(lon, lat)]))[0][0]
-                nodata = dataset.nodata
-
-                if value == nodata or value < -1000:
-                    print(f"Value at ({lat}, {lon}) is a no-data value: {value}")
-                    return None
-                return value
-        except Exception as e:
-            print(f"Error reading from file {file_path}: {e}")
-            return None
-
     def get_elevation_tiff(self, lat, lon):
         tif_files = glob.glob(os.path.join("elevation/", "*.tif"))
 
