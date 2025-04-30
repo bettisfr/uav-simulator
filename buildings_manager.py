@@ -115,9 +115,9 @@ class BuildingsManager:
         max_lon = longitude + half_deg
 
         bbox = geometry.box(min_lon, min_lat, max_lon, max_lat)
-        print(f"Total buildings loaded: {len(self.geo_buildings)}")
+        # print(f"Total buildings loaded: {len(self.geo_buildings)}")
         filtered = self.geo_buildings[self.geo_buildings.geometry.intersects(bbox)]
-        print(f"Filtered buildings in view: {len(filtered)}")
+        # print(f"Filtered buildings in view: {len(filtered)}")
 
         # Create folium map
         m = folium.Map(location=[latitude, longitude], zoom_start=17)

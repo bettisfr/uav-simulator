@@ -32,12 +32,7 @@ if __name__ == "__main__":
     IM = ImageManager()
 
     image = IM.get_image(lat, lon, bbox_size_m=100, resolution_m_per_pixel=0.2)
-    if image:
-        # image.show()
-        image.save(img_path)
-        print(f"Image saved to {img_path}")
-    else:
-        print("No image returned.")
+    print(f"Image saved to {img_path}") if image and image.save(img_path) is None else print("No image returned.")
 
     # ConnectivityManager
     print("\n## Connectivity Manager")
