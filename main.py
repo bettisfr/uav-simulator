@@ -1,7 +1,7 @@
 from connectivity_manager import ConnectivityManager
 from elevation_manager import ElevationManager
 from image_manager import ImageManager
-from fabricate_manager import FabricateManager
+from buildings_manager import BuildingsManager
 if __name__ == "__main__":
     # the following variable is the area of interest: a polygon of points [lat, lon].
     # the current points are an approximation of Umbria's boundaries
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     ],
     "type": "Polygon",
     }
-    FM = FabricateManager(aoi)
+    FM = BuildingsManager(aoi)
 
 
     EM = ElevationManager()

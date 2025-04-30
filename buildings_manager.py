@@ -7,15 +7,15 @@ import os
 import tempfile
 
 
-class FabricateManager:
+class BuildingsManager:
     def __init__(self, aoi):
         self.aoi_geom = aoi
         self.aoi_shape = geometry.shape(self.aoi_geom)
         self.minx, self.miny, self.maxx, self.maxy = self.aoi_shape.bounds
-        self.dest = os.path.join("fabricates", "buildings.geojson")
+        self.dest = os.path.join("buildings", "buildings.geojson")
         self.quad_keys = self.get_tile_aoi_intersection()
         self.ms_csv = pd.read_csv("https://minedbuildings.z5.web.core.windows.net/global-buildings/dataset-links.csv", dtype=str)
-        self.geo_fabricates = self.get_tile_fabricates()
+        self.geo_buildings = self.get_tile_buildings()
 
     def get_tile_aoi_intersection(self):
         quad_keys = set()
@@ -25,7 +25,7 @@ class FabricateManager:
         print(f"The input area spans {len(quad_keys)} tiles: {quad_keys}")
         return quad_keys
 
-    def get_tile_fabricates(self):
+    def get_tile_buildings(self):
         if os.path.exists(self.dest):
             print(f"GeoJson already exists in {self.dest}")
             return gpd.read_file(self.dest)
@@ -67,13 +67,13 @@ class FabricateManager:
 
     def find_intersection_id(self, latitude, longitude):
         # Ensure GeoDataFrame has a spatial index (install rtree package)
-        if not self.geo_fabricates.sindex:
-            self.geo_fabricates.sindex()
+        if not self.geo_buildings.sindex:
+            self.geo_buildings.sindex()
 
         point = geometry.Point([latitude, longitude])
 
-        possible_matches_index = list(self.geo_fabricates.sindex.intersection(point.bounds))
-        possible_matches = self.geo_fabricates.iloc[possible_matches_index]
+        possible_matches_index = list(self.geo_buildings.sindex.intersection(point.bounds))
+        possible_matches = self.geo_buildings.iloc[possible_matches_index]
 
         for _, row in possible_matches.iterrows():
             if row['geometry'].covers(point):

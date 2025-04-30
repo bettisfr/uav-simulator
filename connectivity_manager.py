@@ -152,19 +152,19 @@ class ConnectivityManager:
         self._parse_datasets(m)
         self._parse_towers(m)
 
-        # random print
-        azz = 875
-        print(f"Sample observation: {self.observations[azz]}")
-        print(f"Sample tower: {self.towers[azz]}")
-
-        # Draw convex hull on map
-        folium.Polygon(
-            locations=self.towers[azz]["coverage"],
-            color='black',
-            weight=1,
-            fill=True,
-            fill_opacity=0.1
-        ).add_to(m)
+        # # random print
+        # azz = 875
+        # print(f"Sample observation: {self.observations[azz]}")
+        # print(f"Sample tower: {self.towers[azz]}")
+        #
+        # # Draw convex hull on map
+        # folium.Polygon(
+        #     locations=self.towers[azz]["coverage"],
+        #     color='black',
+        #     weight=1,
+        #     fill=True,
+        #     fill_opacity=0.1
+        # ).add_to(m)
 
         m.save(save_path)
         print(f"Map saved to {save_path}")
