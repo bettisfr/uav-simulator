@@ -4,6 +4,8 @@ import folium
 import os
 from scipy.spatial import ConvexHull
 import numpy as np
+from shapely.geometry import Point, Polygon
+from pykrige.ok import OrdinaryKriging
 
 band_frequencies_numeric = {
     1: 2100,      # MHz
@@ -108,6 +110,18 @@ class ConnectivityManager:
                         coverage = []
 
                         if len(matching_obs) >= 3:
+                            # ---- maybe redundant ----
+                            lats = np.array([obs['lat'] for obs in matching_obs])
+                            lons = np.array([obs['lon'] for obs in matching_obs])
+                            signals = np.array([obs['signal'] for obs in matching_obs])
+                            if all(element == signals[0] for element in signals):
+                                signals[0] = signals[0] + 10^-2 # without we got an error (uniform values are not allowed)
+                            OK = OrdinaryKriging(
+                                lats, lons, signals,
+                                variogram_model='linear',  # or 'spherical', 'exponential'
+                                verbose=False,
+                                enable_plotting=False
+                            )
                             points = [(obs["lat"], obs["lon"]) for obs in matching_obs]
                             points.append((lat, lon))  # include the tower location
 
@@ -133,7 +147,8 @@ class ConnectivityManager:
                             "cell_id": cell_id,
                             "band": band,
                             "five_g": five_g,
-                            "coverage": coverage
+                            "coverage": coverage,
+                            "signal_int": OK
                         }
                         self.towers.append(tower)
 
@@ -170,3 +185,20 @@ class ConnectivityManager:
         print(f"Map saved to {save_path}")
         print(f"Total observations: {len(self.observations)}")
         print(f"Total towers: {len(self.towers)}")
+
+    def get_covering_towers(self, lat, lon):
+        point = Point(lat, lon)
+        covering_towers = []
+
+        for tower in self.towers:
+            try:
+                polygon = Polygon(tower["coverage"])
+                if polygon.contains(point):
+                    kriger_OK = tower["signal_int"]
+                    z, _ = kriger_OK.execute('points', lat, lon) # dBm, variance
+                    covering_towers.append((tower, z))  # (tower, signal strength)
+            except Exception as e:
+                print(f"[WARN] Error checking coverage for cell_id {tower['cell_id']}: {e}")
+                continue
+        print(f"Total covering towers: {len(covering_towers)}")
+        return covering_towers

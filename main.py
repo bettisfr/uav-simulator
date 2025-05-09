@@ -1,5 +1,5 @@
 from connectivity_manager import ConnectivityManager
-from elevation_manager import ElevationManager
+# from elevation_manager import ElevationManager
 from image_manager import ImageManager
 from buildings_manager import BuildingsManager
 
@@ -12,6 +12,14 @@ if __name__ == "__main__":
 
     print("## Parameters")
     print(f"lat: {lat}, lon: {lon}")
+
+    # ConnectivityManager
+    print("\n## Connectivity Manager")
+    CM = ConnectivityManager()
+    map = CM.generate_map(connectivity_map_path)
+    # print(f"{CM.get_covering_towers(lat,lon)}")
+
+    # exit()
 
     # BuildingsManager
     print("\n## Buildings Manager")
@@ -34,7 +42,4 @@ if __name__ == "__main__":
     image = IM.get_image(lat, lon, bbox_size_m=100, resolution_m_per_pixel=0.2)
     print(f"Image saved to {img_path}") if image and image.save(img_path) is None else print("No image returned.")
 
-    # ConnectivityManager
-    print("\n## Connectivity Manager")
-    CM = ConnectivityManager()
-    map = CM.generate_map(connectivity_map_path)
+
