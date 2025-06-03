@@ -1,5 +1,5 @@
 from connectivity_manager import ConnectivityManager
-# from elevation_manager import ElevationManager
+from elevation_manager import ElevationManager
 from image_manager import ImageManager
 from buildings_manager import BuildingsManager
 
